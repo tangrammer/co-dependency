@@ -15,6 +15,10 @@ so this assoc-co-dependencies functionality can be applied to a started system, 
 ## Usage
 Follow the test provided to learn howto use it :)
 
+... basically you only need to use ```co-using``` in the same way as you do with ```component/using```, and after start your system then apply ```(assoc-co-dependencies your-started-system)```
+
+
+
 
 ## License
 
