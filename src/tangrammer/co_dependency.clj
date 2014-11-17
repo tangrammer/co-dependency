@@ -1,29 +1,11 @@
 (ns tangrammer.co-dependency
-  (:require [com.stuartsierra.component :refer (update-system)])
+  (:require [com.stuartsierra.component :as component])
   (:import [com.stuartsierra.component SystemMap]))
 
 (defn co-dependencies
   "Returns the map of other components on which this component co-depends."
   [component]
   (::co-dependencies (meta component) {}))
-
-(defn- assoc-co-dependency [system component co-dependency-key system-key]
-  (let [co-dependency (get system system-key)]
-    (when-not co-dependency
-      (throw (ex-info (str "Missing co-dependency " co-dependency-key
-                           " of " (.getName (class component))
-                           " expected in system at " system-key)
-                      {:reason ::missing-co-dependency
-                       :system-key system-key
-                       :co-dependency-key co-dependency-key
-                       :component component
-                       :system system})))
-    (assoc component co-dependency-key co-dependency)))
-
-(defn- assoc-comp-co-dependencies [component system]
-  (reduce-kv #(assoc-co-dependency system %1 %2 %3)
-             component
-             (co-dependencies component)))
 
 (defn co-using
   "Associates metadata with component describing the other components
@@ -47,5 +29,27 @@
                        :component component
                        :co-dependencies co-dependencies})))))
 
-(defn assoc-co-dependencies [system]
-  (update-system system (keys system) assoc-comp-co-dependencies system))
+(defn- clean-c [c]
+  (reduce (fn [c [k _]]
+            (assoc c k nil)
+            ) c (component/dependencies c))
+  )
+
+(defn- get-component-key [co system]
+  (-> (reduce (fn [c k] (assoc c k (clean-c (get c k)))) system (keys system))
+      clojure.set/map-invert
+      (get (clean-c co))))
+
+(defn- start-with-co-deps-ref [c system-atom]
+  (let [component-key (get-component-key c @system-atom)
+        assoc-ref-co-deps (reduce (fn [c [k-i k-e]]
+                                    (assoc c k-i (fn [] (get @system-atom k-e))))
+                                   c (co-dependencies c))
+        ready-c (component/start assoc-ref-co-deps)]
+
+    (swap! system-atom assoc component-key ready-c)
+
+    ready-c))
+
+(defn start-with-co-dependency [system]
+  (component/update-system system (keys system) start-with-co-deps-ref (atom system)))
