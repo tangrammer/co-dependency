@@ -51,5 +51,5 @@
 
     ready-c))
 
-(defn start-with-co-dependency [system]
+(defn start [system]
   (component/update-system system (keys system) start-with-co-deps-ref (atom system)))

@@ -1,7 +1,7 @@
 (ns tangrammer.co-dependency-test
   (:require [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
-            [tangrammer.co-dependency :refer (co-using start-with-co-dependency)]))
+            [tangrammer.co-dependency :refer (co-using) :as co-dependency]))
 
 
 (defrecord ComponentA [state])
@@ -46,7 +46,7 @@
 
 (deftest basic-test
   (testing ":b depends on :a, :a co-depends on :b"
-    (let [co-s (start-with-co-dependency (system-1))]
+    (let [co-s (co-dependency/start (system-1))]
       (is (= (:state (:a co-s)) (:state (:a ((-> co-s :a :b)))) "state A"))
       (is (= (:state (:a co-s)) (:state (:a ((-> co-s :a :c )))) "state A"))
       (is (= (:state (:a co-s)) (:state (:a (:my-c ((-> co-s :a :d))))) "state A")))))
