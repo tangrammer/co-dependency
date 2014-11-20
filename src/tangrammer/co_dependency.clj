@@ -40,10 +40,20 @@
       clojure.set/map-invert
       (get (clean-c co))))
 
+(defrecord CoDep [system-atom k]
+  clojure.lang.IDeref
+  (deref [_]
+    (get @system-atom k)))
+
+(defmethod clojure.core/print-method CoDep
+  [system ^java.io.Writer writer]
+  (.write writer "#<CoDep>"))
+
+
 (defn- start-with-co-deps-ref [c system-atom]
   (let [component-key (get-component-key c @system-atom)
         assoc-ref-co-deps (reduce (fn [c [k-i k-e]]
-                                    (assoc c k-i (fn [] (get @system-atom k-e))))
+                                    (assoc c k-i (CoDep. system-atom k-e)))
                                    c (co-dependencies c))
         ready-c (component/start assoc-ref-co-deps)]
 

@@ -51,6 +51,8 @@
 (deftest basic-test
   (testing ":b depends on :a, :a co-depends on :b"
     (let [co-s (co-dependency/start (system-1))]
-      (is (= (:state (:a co-s)) (:state (:a ((-> co-s :a :b))))))
-      (is (= (:state (:a co-s)) (:state (:a ((-> co-s :a :c ))))))
-      (is (= (:state (:a co-s)) (:state (:a (:my-c ((-> co-s :a :d))))))))))
+      (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :b)))))
+      (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :c )))))
+      (is (= (:state (:a co-s)) (:state (:a (:my-c @(-> co-s :a :d)))))))))
+
+; @(-> (co-dependency/start (system-1)) :a :b )

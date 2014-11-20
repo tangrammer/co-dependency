@@ -18,12 +18,19 @@ Follow the test provided to learn howto use it :)
 ... basically you only need to use ```co-dep/co-using``` in the same way as you do with ```component/using```, and after start your system then apply ```(co-dep/start your-system)```
 
 ## Drawbacks
-You get the co-dependency as a function without parameters that you need to invoke
+In contrast with normal dependencies that you get using clojure map functions 
 
+```
+(:dependency-key component) 
+;;=> dependency
+```
 
-example: ``` (:child ((-> system :child :parent)) ) ```
+when you want to retrieve a co-dependency you need to deref the co-dependency value 
 
-Note the extra parenthesis
+```  
+@(:co-dependency-key component)    
+;;=> co-dependency
+```
 
 
 
