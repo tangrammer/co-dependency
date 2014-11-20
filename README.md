@@ -7,9 +7,9 @@ and therefore we can "expect" them in the same way as futures values. In this pr
 
 ## Releases and Dependency Information
 
-[Leiningen] dependency information:
+Add co-dependency to your project `:dependencies`.
 
-    [tangrammer/co-dependency "0.1.1"]
+![Clojars Project](http://clojars.org/tangrammer/co-dependency/latest-version.svg)
 
 
 ## Usage
