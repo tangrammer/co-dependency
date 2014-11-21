@@ -88,7 +88,6 @@ when you want to retrieve a co-dependency you need to deref the co-dependency va
 
 ## License
 
-The MIT License (MIT)
-
 Copyright © 2014 Juan Antonio Ruz (juxt.pro)
 
+Distributed under the Eclipse Public License, the same as Clojure
