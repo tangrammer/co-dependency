@@ -1,7 +1,7 @@
-(ns tangrammer.co-dependency-test
+(ns tangrammer.component.co-dependency-test
   (:require [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
-            [tangrammer.co-dependency :refer (co-using) :as co-dependency]))
+            [tangrammer.component.co-dependency :refer (co-using) :as co-dependency]))
 
 (defn- create-state [k]
   (str "state " k ": "  (rand-int Integer/MAX_VALUE)))
@@ -46,13 +46,10 @@
                         (component/using {:b :b :my-c :c}))
                  :e (component-e)}))
 
-
-
 (deftest basic-test
   (testing ":b depends on :a, :a co-depends on :b"
     (let [co-s (co-dependency/start (system-1))]
       (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :b)))))
+      (is (= (:a co-s) (:a @(-> co-s :a :b))))
       (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :c )))))
       (is (= (:state (:a co-s)) (:state (:a (:my-c @(-> co-s :a :d)))))))))
-
-; @(-> (co-dependency/start (system-1)) :a :b )
