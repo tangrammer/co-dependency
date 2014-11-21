@@ -4,20 +4,14 @@
   (:import [com.stuartsierra.component SystemMap]
            [clojure.lang Atom]))
 
-(defprotocol Identity
-  (component-key [_]))
-
 (defrecord CoDep [^Atom system k]
   clojure.lang.IDeref
   (deref [_]
-    (get @system k))
-  Identity
-  (component-key [_] k)
-  )
+    (get @system k)))
 
 (defmethod clojure.core/print-method CoDep
   [co-dep ^java.io.Writer writer]
-  (.write writer (format "#<CoDep>: %s" (component-key co-dep))))
+  (.write writer (format "#<CoDep> %s" (:k co-dep))))
 
 (defn co-dependencies
   "Same as component/dependencies but using ::co-dependencies"
