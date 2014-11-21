@@ -6,10 +6,28 @@ This co-dependency proposal is designed on the idea that a component doesn't nee
 
 ## Releases and Dependency Information
 
-![Clojars Project](http://clojars.org/tangrammer/co-dependency/latest-version.svg)
+
+```clojure
+
+[tangrammer/co-dependency "0.1.3"]
+
+```
 
 
 ## Usage
+
+#### Add co-dependency to your project dependencies
+
+```clojure
+
+(defproject your-project "your-version"
+   ...
+   :dependencies [[tangrammer/co-dependency "0.1.3"]]        
+   ...
+   )
+   
+```
+
 
 #### Add component and co-dependency to your ns:
 
