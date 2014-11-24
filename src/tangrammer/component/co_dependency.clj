@@ -52,6 +52,24 @@
     (swap! system assoc (utils/get-component-key c @system) started-component)
     started-component))
 
+(defn system-co-using
+  "Associates dependency metadata with multiple components in the
+  system. dependency-map is a map of keys in the system to maps or
+  vectors specifying the dependencies of the component at that key in
+  the system, as per 'using'."
+  [system dependency-map]
+  (reduce-kv
+   (fn [system key dependencies]
+     (let [component (get system key)]
+       (when-not component
+         (throw (ex-info (str "Missing component " key " from system")
+                         {:reason ::missing-component
+                          :system-key key
+                          :system system})))
+       (assoc system key (co-using component dependencies))))
+   system
+   dependency-map))
+
 (defn start-system
   "same as component/start-system but using assoc-co-deps-and-start fn
    with atom system argument"
