@@ -1,12 +1,42 @@
 (ns tangrammer.component.co-dependency-test
   (:require [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
-            [tangrammer.component.co-dependency :as co-dependency]))
+            [tangrammer.component.co-dependency :as co-dependency]
+            [potemkin.collections :refer (def-map-type)]))
 
+(def-map-type LazyMap [m]
+  (get [_ k default-value]
+    (if (contains? m k)
+      (let [v (get m k)]
+        (if (instance? clojure.lang.Delay v)
+          @v
+          v))
+      default-value))
+  (assoc [_ k v]
+    (LazyMap. (assoc m k v)))
+  (dissoc [_ k]
+     (LazyMap. (dissoc m k)))
+  (keys [_]
+    (keys m)))
 (defn- create-state [k]
   (str "state " k ": "  (rand-int Integer/MAX_VALUE)))
 
-(defrecord ComponentA [state])
+(defprotocol TestCodep
+  (anything [_]))
+
+(defrecord ComponentA [state]
+  component/Lifecycle
+  (start [this]
+    (println "starting a")
+    this)
+  (stop [this]
+    (println "stoping a")
+    this)
+  TestCodep
+  (anything [_]
+    "the state: " state)
+  )
+
 
 (defn component-a [] (->ComponentA {:state (create-state :a)}))
 
@@ -31,7 +61,8 @@
   (start [this]
     (component/start-system this))
   (stop [this]
-    (component/stop-system this)))
+    (component/stop-system this))
+  )
 
 (defn system-1 []
   (map->System1 {:a (-> (component-a)
@@ -53,3 +84,11 @@
       (is (= (:a co-s) (:a @(-> co-s :a :b))))
       (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :c )))))
       (is (= (:state (:a co-s)) (:state (:a (:my-c @(-> co-s :a :d)))))))))
+
+;; with potemkim def-map-type
+;; you don't have protocol implementations
+(assert (= false (satisfies? TestCodep (co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))))
+(try
+  (anything(co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))
+  (assert false) ;; you dont have same functions either
+  (catch java.lang.IllegalArgumentException e (.getMessage e)))
