@@ -1,5 +1,5 @@
 # stuartsierra/component co-dependency facility
-Based in original co-dependency idea of [Malcolm Sparks](https://github.com/juxt/component) to achieve co-dependency relation in
+Based in original co-dependency idea of [Malcolm Sparks](https://github.com/malcolmsparks) to achieve co-dependency relation in
 [stuartsierra/component](https://github.com/stuartsierra/component) library.
 
 This co-dependency proposal is designed on the idea that a component doesn't need co-dependencies to start as it does with normal dependencies but after system is started. 
@@ -46,33 +46,28 @@ This co-dependency proposal is designed on the idea that a component doesn't nee
 
 #### Define your system 
 
-[Same as you do](https://github.com/stuartsierra/component/blob/master/test/com/stuartsierra/component_test.clj#L114-L121) with stuartsierra/component lib but adding co-dependencies with co-dependency/co-using fn
+[Same as you do](https://github.com/stuartsierra/component/blob/master/test/com/stuartsierra/component_test.clj#L114-L121) with stuartsierra/component lib but adding co-dependencies with co-dependency/co-using fn   
 **In this case :b depends on :a and :a co-depends on :b**
 
 ```clojure
 
-(defn system-1 []
+(defn system-map []
   (map->System1 {:a (-> (component-a)
                         (co-dependency/co-using [:b]))
                  :b (-> (component-b)
-                        (component/using [:a]))
-                 :c (-> (component-c)
-                        (component/using [:a :b]))
-                 :d (-> (component-d)
-                        (component/using {:b :b :c :c}))
-                 :e (component-e)})
+                        (component/using [:a]))})
 
 ```
 
 #### Start your system
 ```clojure
-(def system-started-with-co-deps (co-dependency/start-system (system-1)))
+(def system (co-dependency/start-system (system-map)))
 ```
 
 #### Retrieving co-dependencies values
 ```clojure
-(def a (-> system-started-with-co-deps :a))
-(def a-from-b (:a @(-> system-started-with-co-deps :a :b)))
+(def a (-> system :a))
+(def a-from-b (-> @(-> system :a :b) :a) 
 ;; checking identity equality
 (assert (= a a-from-b))
 ```
