@@ -5,4 +5,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.stuartsierra/component "0.2.2"]
-                 [potemkin "0.3.11"]])
+                 [potemkin "0.3.11"]
+                 [tangrammer/defrecord-wrapper "0.1.2-SNAPSHOT"]])

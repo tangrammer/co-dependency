@@ -1,8 +1,11 @@
 (ns tangrammer.component.co-dependency
   (:require [com.stuartsierra.component :as component]
             [tangrammer.component.utils :as utils]
+            [defrecord-wrapper.aop :as aop]
+            [defrecord-wrapper.reflect :as r]
             [potemkin.collections :refer (def-map-type)])
   (:import [com.stuartsierra.component SystemMap]
+           [defrecord_wrapper.aop SimpleWrapper]
            [clojure.lang Atom]))
 
 
@@ -24,6 +27,7 @@
           (LazyMap. (dissoc m k) key-set))
   (keys [_]
         (into '() @key-set)))
+
 
 
 (defn co-dependencies
@@ -61,11 +65,15 @@
    updates system atom with the started component"
   [c ^Atom system]
 
+  (aop/add-extends LazyMap (r/get-specific-supers c) nil)
+
   (let [started-component (-> (assoc-co-dependencies c system)
-                              (merge c)
-                              component/start)
+                              (merge c {:wrapped-record c})
+;                              component/start
+                              )
         c-k (utils/get-component-key c @system)]
     (println "starting:" c-k)
+    (println "keys " (r/get-specific-supers c))
     (swap! system assoc (utils/get-component-key c @system) started-component)
     started-component))
 

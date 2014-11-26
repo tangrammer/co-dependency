@@ -1,5 +1,6 @@
 (ns tangrammer.component.co-dependency-test
   (:require [clojure.test :refer :all]
+            [clojure.repl :refer (apropos dir doc find-doc pst source)]
             [com.stuartsierra.component :as component]
             [tangrammer.component.co-dependency :as co-dependency]))
 
@@ -74,9 +75,11 @@
 
 (let [s (co-dependency/start-system (system-1))]
 
-  ;; Note that so far we still don't get the protocols impls
-  (assert (not (satisfies? TestCodep (-> s :a))))
-  (= (-> s :b) (-> s :a :b) (-> s :a :b :a :b :a :b))
+   (satisfies? TestCodep (-> s :a))
+
+   (assert (= (-> s :b :a) (-> s :a)))
+
+   (= (-> s :b) (-> s :a :b) (-> s :a :b :a :b :a :b))
 
   )
 
