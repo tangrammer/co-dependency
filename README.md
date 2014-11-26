@@ -2,7 +2,7 @@
 Based in original co-dependency idea of [Malcolm Sparks](https://github.com/juxt/component) to achieve co-dependency relation in
 [stuartsierra/component](https://github.com/stuartsierra/component) library.
 
-This co-dependency proposal is designed on the idea that a component doesn't need co-dependencies to start as it do with normal dependencies but after system is started. 
+This co-dependency proposal is designed on the idea that a component doesn't need co-dependencies to start as it does with normal dependencies but after system is started. 
 
 ## Releases and Dependency Information
 
@@ -13,6 +13,10 @@ This co-dependency proposal is designed on the idea that a component doesn't nee
 
 ```
 
+```clojure
+:dependencies [[org.clojure/clojure "1.6.0"]
+               [com.stuartsierra/component "0.2.2"]]
+```
 
 ## Usage
 
