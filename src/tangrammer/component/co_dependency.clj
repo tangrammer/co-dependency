@@ -1,17 +1,30 @@
 (ns tangrammer.component.co-dependency
   (:require [com.stuartsierra.component :as component]
-            [tangrammer.component.utils :as utils])
+            [tangrammer.component.utils :as utils]
+            [potemkin.collections :refer (def-map-type)])
   (:import [com.stuartsierra.component SystemMap]
            [clojure.lang Atom]))
 
-(defrecord CoDep [^Atom system k]
-  clojure.lang.IDeref
-  (deref [_]
-    (get @system k)))
 
-(defmethod clojure.core/print-method CoDep
-  [co-dep ^java.io.Writer writer]
-  (.write writer (format "#<CoDep> %s" (:k co-dep))))
+;; LazyMap based on potemkim version but adding key-set atom
+;; to avoid memoizing delays values
+(def-map-type LazyMap [m key-set]
+  (get [_ k default-value]
+    (if (contains? m k)
+      (let [v (get m k)]
+        (if (instance? clojure.lang.Delay v)
+          @v
+          v))
+      default-value))
+  (assoc [_ k v]
+    (swap! key-set conj k)
+    (LazyMap. (assoc m k v) key-set))
+  (dissoc [_ k]
+          (swap! key-set disj k)
+          (LazyMap. (dissoc m k) key-set))
+  (keys [_]
+        (into '() @key-set)))
+
 
 (defn co-dependencies
   "Same as component/dependencies but using ::co-dependencies"
@@ -38,17 +51,21 @@
   "Co-dependency value is a CoDep instance that contains a
    reference to atom system and a co-dependency component key."
   [c ^Atom system]
-  (reduce (fn [c [k-i k-e]]
-            (assoc c k-i (CoDep. system k-e)))
-          c (co-dependencies c)))
+  (LazyMap. (reduce (fn [m [k-i k-e]]
+                      (assoc m k-i
+                             ((fn [system k] (delay (get @system k))) system k-e)))
+                    {} (co-dependencies c)) (atom #{})))
 
 (defn- assoc-co-deps-and-start
   "This fn starts the component after associating codependencies and
    updates system atom with the started component"
   [c ^Atom system]
-  (let [started-component (-> c
-                              (assoc-co-dependencies system)
-                              component/start)]
+
+  (let [started-component (-> (assoc-co-dependencies c system)
+                              (merge c)
+                              component/start)
+        c-k (utils/get-component-key c @system)]
+    (println "starting:" c-k)
     (swap! system assoc (utils/get-component-key c @system) started-component)
     started-component))
 

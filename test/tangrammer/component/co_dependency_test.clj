@@ -1,23 +1,8 @@
 (ns tangrammer.component.co-dependency-test
   (:require [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
-            [tangrammer.component.co-dependency :as co-dependency]
-            [potemkin.collections :refer (def-map-type)]))
+            [tangrammer.component.co-dependency :as co-dependency]))
 
-(def-map-type LazyMap [m]
-  (get [_ k default-value]
-    (if (contains? m k)
-      (let [v (get m k)]
-        (if (instance? clojure.lang.Delay v)
-          @v
-          v))
-      default-value))
-  (assoc [_ k v]
-    (LazyMap. (assoc m k v)))
-  (dissoc [_ k]
-     (LazyMap. (dissoc m k)))
-  (keys [_]
-    (keys m)))
 (defn- create-state [k]
   (str "state " k ": "  (rand-int Integer/MAX_VALUE)))
 
@@ -85,10 +70,42 @@
       (is (= (:state (:a co-s)) (:state (:a @(-> co-s :a :c )))))
       (is (= (:state (:a co-s)) (:state (:a (:my-c @(-> co-s :a :d)))))))))
 
-;; with potemkim def-map-type
-;; you don't have protocol implementations
-(assert (= false (satisfies? TestCodep (co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))))
-(try
-  (anything(co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))
-  (assert false) ;; you dont have same functions either
-  (catch java.lang.IllegalArgumentException e (.getMessage e)))
+
+
+(let [s (co-dependency/start-system (system-1))]
+
+  ;; Note that so far we still don't get the protocols impls
+  (assert (not (satisfies? TestCodep (-> s :a))))
+  (= (-> s :b) (-> s :a :b) (-> s :a :b :a :b :a :b))
+
+  )
+
+
+
+
+#_(comment
+
+    (def ss (co-dependency/start-system (system-1)))
+(-> ss :a :b)
+
+ ;; with potemkim def-map-type
+ ;; you don't have protocol implementations
+  (assert (= false (satisfies? TestCodep (co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))))
+  (try
+    (anything(co-dependency/LazyMap. (-> (co-dependency/start-system (system-1)) :a)))
+    (assert false) ;; you dont have same functions either
+    (catch java.lang.IllegalArgumentException e (.getMessage e)))
+
+
+  (satisfies? TestCodep (merge (-> (co-dependency/start-system (system-1)) :a)
+                               (co-dependency/LazyMap. {:b (atom true)})))
+
+  (let [mix (merge (-> (co-dependency/start-system (system-1)) :a)
+                   (co-dependency/LazyMap. {:h (atom true)})
+
+                   )]
+    (:h mix)
+                                        ;  (anything mix)
+    )
+  (get (co-dependency/LazyMap. {:h (atom true)}) :h "")
+)
