@@ -42,7 +42,7 @@
             (assoc c k-i (CoDep. system k-e)))
           c (co-dependencies c)))
 
-(defn- assoc-co-deps-and-start
+(defn ^{:bigbang/phase :on-start} assoc-co-deps-and-start
   "This fn starts the component after associating codependencies and
    updates system atom with the started component"
   [c ^Atom system]
