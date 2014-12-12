@@ -34,7 +34,7 @@
                      :component component
                      :co-dependencies co-dependencies})))))
 
-(defn- assoc-co-dependencies
+(defn ^{:bigbang/phase :before-start} assoc-co-dependencies
   "Co-dependency value is a CoDep instance that contains a
    reference to atom system and a co-dependency component key."
   [c ^Atom system]
