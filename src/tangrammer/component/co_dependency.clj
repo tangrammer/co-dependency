@@ -42,6 +42,14 @@
             (assoc c k-i (CoDep. system k-e)))
           c (co-dependencies c)))
 
+(defn ^{:bigbang/phase :after-start} update-atom-system
+  [c* ^Atom system]
+  (assert (not (nil? (:bigbang/key (meta c*))))
+          "this fn needs your components meta tag with :bigbang/key")
+  (swap! system assoc (:bigbang/key (meta c*)) c*)
+  c*)
+
+
 (defn ^{:bigbang/phase :on-start} assoc-co-deps-and-start
   "This fn starts the component after associating codependencies and
    updates system atom with the started component"
