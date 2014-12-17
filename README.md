@@ -9,7 +9,7 @@ This co-dependency proposal is designed on the idea that a component doesn't nee
 
 ```clojure
 
-[tangrammer/co-dependency "0.1.4"]
+[tangrammer/co-dependency "0.1.5"]
 
 ```
 
