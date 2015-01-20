@@ -44,10 +44,12 @@
 
 (defn ^{:bigbang/phase :after-start} update-atom-system
   [c* ^Atom system]
-  (assert (not (nil? (:bigbang/key (meta c*))))
-          "this fn needs your components meta tag with :bigbang/key")
-  (swap! system assoc (:bigbang/key (meta c*)) c*)
-  c*)
+  (let [key-component (:bigbang/key (meta c*))]
+    (if (nil? key-component)
+      (println (format "this component \"%s\" didn't return this so we can't access to its key-component and it will not available for co-dependency either" c*))
+      (swap! system assoc key-component c*)
+      )
+   c*))
 
 
 (defn ^{:bigbang/phase :on-start} assoc-co-deps-and-start
